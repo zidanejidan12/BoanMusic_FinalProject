@@ -36,7 +36,6 @@ class MyApp extends StatelessWidget {
           create: (_) => AlbumApi(baseUrl: 'https://localhost:44300'),
         ),
         Provider<ArtistApi>(
-          // Provide the Artist API
           create: (_) => ArtistApi(baseUrl: 'https://localhost:44300'),
         ),
         ProxyProvider<SongApi, SongRepository>(
@@ -46,7 +45,6 @@ class MyApp extends StatelessWidget {
           update: (_, api, __) => AlbumRepository(albumApi: api),
         ),
         ProxyProvider<ArtistApi, ArtistRepository>(
-          // Provide the Artist Repository
           update: (_, api, __) => ArtistRepository(artistApi: api),
         ),
         ProxyProvider<SongRepository, FetchSongs>(
@@ -59,14 +57,12 @@ class MyApp extends StatelessWidget {
           update: (_, repo, __) => FetchAlbumsByArtistId(repository: repo),
         ),
         ProxyProvider<ArtistRepository, FetchArtists>(
-          // Provide the FetchArtists use case
           update: (_, repo, __) => FetchArtists(repository: repo),
         ),
         ProxyProvider<SongRepository, FetchSongById>(
           update: (_, repo, __) => FetchSongById(repository: repo),
         ),
         ProxyProvider<SongRepository, FetchSongsByAlbumId>(
-          // Provide the FetchSongsByAlbumId use case
           update: (_, repo, __) => FetchSongsByAlbumId(repository: repo),
         ),
         ProxyProvider<SongRepository, FetchSongsByArtistId>(

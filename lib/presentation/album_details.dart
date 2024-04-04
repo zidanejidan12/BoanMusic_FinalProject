@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:boanmusic/domain/usecases/fetch_songs_by_album_id.dart';
-import 'song_details.dart'; // Import the SongDetailsScreen
+import 'song_details.dart';
 
 class AlbumDetailsScreen extends StatelessWidget {
   final int albumId;
