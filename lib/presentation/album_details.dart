@@ -5,9 +5,11 @@ import 'package:provider/provider.dart';
 import 'package:boanmusic/domain/usecases/fetch_songs_by_album_id.dart';
 import 'song_details.dart';
 
+/// Screen to display details of an album, including its songs.
 class AlbumDetailsScreen extends StatelessWidget {
   final int albumId;
 
+  /// Constructs an [AlbumDetailsScreen] with the given [albumId].
   const AlbumDetailsScreen({Key? key, required this.albumId}) : super(key: key);
 
   @override
@@ -79,9 +81,10 @@ class AlbumDetailsScreen extends StatelessWidget {
                       Text(
                         albumName,
                         style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(

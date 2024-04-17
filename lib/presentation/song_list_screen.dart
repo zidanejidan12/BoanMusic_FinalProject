@@ -1,14 +1,15 @@
-import 'package:boanmusic/presentation/user_login_screen.dart';
-import 'package:boanmusic/providers/login_user_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:boanmusic/domain/usecases/fetch_albums.dart';
 import 'package:boanmusic/domain/usecases/fetch_songs.dart';
 import 'package:boanmusic/domain/usecases/fetch_artist.dart';
 import 'package:boanmusic/presentation/song_details.dart';
 import 'package:boanmusic/presentation/album_details.dart';
 import 'package:boanmusic/presentation/artist_details.dart';
-import 'package:provider/provider.dart';
+import 'package:boanmusic/providers/login_user_provider.dart';
+import 'package:boanmusic/presentation/user_login_screen.dart';
 
+/// Screen to display a list of songs, albums, and artists.
 class SongListScreen extends StatefulWidget {
   final FetchSongs fetchSongs;
   final FetchAlbums fetchAlbums;
@@ -36,18 +37,15 @@ class _SongListScreenState extends State<SongListScreen> {
     super.initState();
     _futureSongs = widget.fetchSongs();
     _futureAlbums = widget.fetchAlbums();
-    _futureArtists = widget.fetchArtists(); // Fetch top artists data
+    _futureArtists = widget.fetchArtists();
 
-    // Access the LoginUserProvider instance
     _loginUserProvider = Provider.of<LoginUserProvider>(context, listen: false);
   }
 
+  /// Logs the user out and navigates to the login screen.
   void _logout() async {
     try {
-      // Call logoutUser method from LoginUserProvider
       await _loginUserProvider.logoutUser();
-
-      // Navigate back to the login screen
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -59,7 +57,6 @@ class _SongListScreenState extends State<SongListScreen> {
         ),
       );
     } catch (e) {
-      // Handle logout error
       print('Logout error: $e');
     }
   }
@@ -68,7 +65,7 @@ class _SongListScreenState extends State<SongListScreen> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color.fromRGBO(79, 85, 89, 1), // Spotify green color
+        color: Color.fromRGBO(79, 85, 89, 1),
       ),
       child: Scaffold(
         appBar: AppBar(
@@ -78,113 +75,112 @@ class _SongListScreenState extends State<SongListScreen> {
           ],
         ),
         body: SingleChildScrollView(
-          // Wrap the entire Column with SingleChildScrollView
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Top Songs',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 0, 0, 0), // Text color
-                  ),
-                ),
-              ),
-              FutureBuilder(
-                future: _futureSongs,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else {
-                    final songs = snapshot.data as List<Map<String, dynamic>>;
-                    return SingleChildScrollView(
-                      // Wrap the SingleChildScrollView with SingleChildScrollView to allow horizontal scrolling
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children:
-                            songs.map((song) => SongItem(song: song)).toList(),
-                      ),
-                    );
-                  }
-                },
-              ),
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Top Albums',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 0, 0, 0), // Text color
-                  ),
-                ),
-              ),
-              FutureBuilder(
-                future: _futureAlbums,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else {
-                    final albums = snapshot.data as List<Map<String, dynamic>>;
-                    return SingleChildScrollView(
-                      // Wrap the SingleChildScrollView with SingleChildScrollView to allow horizontal scrolling
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: albums
-                            .map((album) => AlbumItem(album: album))
-                            .toList(),
-                      ),
-                    );
-                  }
-                },
-              ),
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Text(
-                  'Top Artists',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 0, 0, 0), // Text color
-                  ),
-                ),
-              ),
-              FutureBuilder(
-                future: _futureArtists,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else {
-                    final artists = snapshot.data as List<Map<String, dynamic>>;
-                    return SingleChildScrollView(
-                      // Wrap the SingleChildScrollView with SingleChildScrollView to allow horizontal scrolling
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: artists
-                            .map((artist) => ArtistItem(artist: artist))
-                            .toList(),
-                      ),
-                    );
-                  }
-                },
-              ),
+              _buildSectionTitle('Top Songs'),
+              _buildSongList(_futureSongs),
+              _buildSectionTitle('Top Albums'),
+              _buildAlbumList(_futureAlbums),
+              _buildSectionTitle('Top Artists'),
+              _buildArtistList(_futureArtists),
             ],
           ),
         ),
       ),
     );
   }
+
+  /// Builds a section title widget.
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Color.fromARGB(255, 0, 0, 0),
+        ),
+      ),
+    );
+  }
+
+  /// Builds a list of songs.
+  Widget _buildSongList(Future<List<Map<String, dynamic>>> future) {
+    return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final songs = snapshot.data as List<Map<String, dynamic>>;
+          return _buildItemList(
+            songs,
+            (song) => SongItem(song: song),
+          );
+        }
+      },
+    );
+  }
+
+  /// Builds a list of albums.
+  Widget _buildAlbumList(Future<List<Map<String, dynamic>>> future) {
+    return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final albums = snapshot.data as List<Map<String, dynamic>>;
+          return _buildItemList(
+            albums,
+            (album) => AlbumItem(album: album),
+          );
+        }
+      },
+    );
+  }
+
+  /// Builds a list of artists.
+  Widget _buildArtistList(Future<List<Map<String, dynamic>>> future) {
+    return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final artists = snapshot.data as List<Map<String, dynamic>>;
+          return _buildItemList(
+            artists,
+            (artist) => ArtistItem(artist: artist),
+          );
+        }
+      },
+    );
+  }
+
+  /// Builds a list of items based on the data and item builder function.
+  Widget _buildItemList<T>(
+    List<T> items,
+    Widget Function(T item) itemBuilder,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: items.map((item) => itemBuilder(item)).toList(),
+      ),
+    );
+  }
 }
 
+/// Widget to display a song item.
 class SongItem extends StatelessWidget {
   final Map<String, dynamic> song;
 
@@ -203,27 +199,23 @@ class SongItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 200, // Width of each song item
+        width: 200,
         margin: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image or Album Artwork
             Image.network(
-              song['imageSongURL'], // Assuming this key holds the image URL
-              width: 150, // Adjust image width as needed
-              height: 150, // Adjust image height as needed
+              song['imageSongURL'],
+              width: 150,
+              height: 150,
             ),
             const SizedBox(height: 8.0),
-            // Title
             Text(
-              song['title'], // Assuming this key holds the title of the song
+              song['title'],
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4.0),
-            // Artist Name
-            Text(song['album']['artist']
-                ['fName']), // Assuming this key holds the artist's first name
+            Text(song['album']['artist']['fName']),
           ],
         ),
       ),
@@ -231,6 +223,7 @@ class SongItem extends StatelessWidget {
   }
 }
 
+/// Widget to display an artist item.
 class ArtistItem extends StatelessWidget {
   final Map<String, dynamic> artist;
 
@@ -240,7 +233,6 @@ class ArtistItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Handle artist item tap
         int artistId = artist['id'];
         Navigator.push(
           context,
@@ -250,21 +242,19 @@ class ArtistItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 200, // Width of each artist item
+        width: 200,
         margin: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image or Artist Photo
             Image.network(
-              artist['imageURL'], // Assuming this key holds the image URL
-              width: 150, // Adjust image width as needed
-              height: 150, // Adjust image height as needed
+              artist['imageURL'],
+              width: 150,
+              height: 150,
             ),
             const SizedBox(height: 8.0),
-            // Artist Name
             Text(
-              '${artist['fName']} ${artist['lName'] ?? ''}', // Assuming this key holds the artist's full name
+              '${artist['fName']} ${artist['lName'] ?? ''}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4.0),
@@ -275,6 +265,7 @@ class ArtistItem extends StatelessWidget {
   }
 }
 
+/// Widget to display an album item.
 class AlbumItem extends StatelessWidget {
   final Map<String, dynamic> album;
 
@@ -293,27 +284,23 @@ class AlbumItem extends StatelessWidget {
         );
       },
       child: Container(
-        width: 200, // Width of each album item
+        width: 200,
         margin: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Image or Album Artwork
             Image.network(
-              album['imageCoverURL'], // Assuming this key holds the image URL
-              width: 150, // Adjust image width as needed
-              height: 150, // Adjust image height as needed
+              album['imageCoverURL'],
+              width: 150,
+              height: 150,
             ),
             const SizedBox(height: 8.0),
-            // Title
             Text(
-              album['title'], // Assuming this key holds the title of the album
+              album['title'],
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4.0),
-            // Artist Name
-            Text(album['artist']
-                ['fName']), // Assuming this key holds the artist's first name
+            Text(album['artist']['fName']),
           ],
         ),
       ),
